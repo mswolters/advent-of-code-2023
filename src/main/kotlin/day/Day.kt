@@ -14,14 +14,18 @@ interface Day {
         return readInput(name)
     }
 
-    data class TestData(val expected1: Int, val expected2: Int, val data: List<String>)
+    data class TestData(val expected1: String, val expected2: String, val data: List<String>) {
+        constructor(expected1: Int, expected2: Int, data: List<String>) : this(expected1.toString(), expected2.toString(), data)
+
+    }
 
 }
 
 sealed interface Result
 
 @JvmInline
-value class Success(val result: Int) : Result
-fun Int.asSuccess() = Success(this)
+value class Success(val result: String) : Result
+fun <T> T.asSuccess() = Success("$this")
+fun String.asSuccess() = Success(this)
 
 data object NotImplemented : Result
