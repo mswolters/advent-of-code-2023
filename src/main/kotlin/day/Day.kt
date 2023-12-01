@@ -14,8 +14,8 @@ interface Day {
         return readInput(name)
     }
 
-    data class TestData(val expected1: String, val expected2: String, val data: List<String>) {
-        constructor(expected1: Int, expected2: Int, data: List<String>) : this(expected1.toString(), expected2.toString(), data)
+    data class TestData(val expected1: String, val expected2: String, val data: List<String>, val data2: List<String> = data) {
+        constructor(expected1: Int, expected2: Int, data: List<String>, data2: List<String> = data) : this(expected1.toString(), expected2.toString(), data, data2)
 
     }
 

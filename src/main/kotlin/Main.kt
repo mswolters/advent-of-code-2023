@@ -28,7 +28,7 @@ fun test(day: Day): Boolean {
         }
 
     }
-    when (val result2 = day.part2(testData.data)) {
+    when (val result2 = day.part2(testData.data2)) {
         NotImplemented -> {}
         is Success -> if (testData.expected2 != result2.result) {
             println("${day.name}: 2: Expected: ${testData.expected2}, result: ${result2.result}")
