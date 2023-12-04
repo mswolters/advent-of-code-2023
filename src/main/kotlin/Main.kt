@@ -1,4 +1,8 @@
 import day.*
+import kotlin.Result
+import kotlin.time.measureTime
+
+const val PRINT_TIME = true
 
 fun main(args: Array<String>) {
     val days = listOf(
@@ -40,12 +44,24 @@ fun test(day: Day): Boolean {
 
 fun run(day: Day) {
     val input = day.input()
-    val part1Result = day.part1(input)
+    val part1Result: day.Result
+    val timeTaken1 = measureTime {
+        part1Result = day.part1(input)
+    }
     if (part1Result is Success) {
         println("${day.name} Part 1: ${part1Result.result}")
+        if (PRINT_TIME) {
+            println("Solving took $timeTaken1")
+        }
     }
-    val part2Result = day.part2(input)
+    val part2Result: day.Result
+    val timeTaken2 = measureTime {
+        part2Result = day.part2(input)
+    }
     if (part2Result is Success) {
         println("${day.name} Part 2: ${part2Result.result}")
+        if (PRINT_TIME) {
+            println("Solving took $timeTaken2")
+        }
     }
 }
