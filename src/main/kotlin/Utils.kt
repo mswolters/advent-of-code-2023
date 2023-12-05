@@ -15,6 +15,9 @@ fun String.md5(): String = BigInteger(1, MessageDigest.getInstance("MD5").digest
 fun Iterable<String>.asInts(): List<Int> = map { it.toInt() }
 fun Sequence<String>.asInts(): Sequence<Int> = map { it.toInt() }
 
+fun Iterable<String>.asLongs(): List<Long> = map { it.toLong() }
+fun Sequence<String>.asLongs(): Sequence<Long> = map { it.toLong() }
+
 fun <T> Iterable<T>.asPair(): Pair<T, T> {
     require(this.count() == 2)
     return Pair(this.first(), this.last())
