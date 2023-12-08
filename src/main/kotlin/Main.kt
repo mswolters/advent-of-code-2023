@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
         Day21, Day22, Day23, Day24, Day25,
     )
 
-    days.forEach { testAndRunOnSuccess(it) }
+    days.reversed().forEach { testAndRunOnSuccess(it) }
 }
 
 fun testAndRunOnSuccess(day: Day) {
