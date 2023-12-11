@@ -1,5 +1,4 @@
 import day.*
-import kotlin.Result
 import kotlin.time.measureTime
 
 const val PRINT_TIME = true
@@ -44,7 +43,7 @@ fun test(day: Day): Boolean {
 
 fun run(day: Day) {
     val input = day.input()
-    val part1Result: day.Result
+    val part1Result: Result
     val timeTaken1 = measureTime {
         part1Result = day.part1(input)
     }
@@ -54,7 +53,7 @@ fun run(day: Day) {
             println("Solving took $timeTaken1")
         }
     }
-    val part2Result: day.Result
+    val part2Result: Result
     val timeTaken2 = measureTime {
         part2Result = day.part2(input)
     }
