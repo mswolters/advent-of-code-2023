@@ -35,3 +35,11 @@ fun <T> Iterable<T>.byNth(n: Int): List<List<T>> {
 }
 
 fun Int.pow(exponent: Int): Int = toBigInteger().pow(exponent).toInt()
+
+fun <A, B> Iterable<A>.cartesianProduct(other: Iterable<B>): Sequence<Pair<A, B>> = sequence {
+    forEach { a ->
+        other.forEach { b ->
+            yield(a to b)
+        }
+    }
+}
