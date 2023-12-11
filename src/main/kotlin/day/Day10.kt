@@ -3,14 +3,50 @@ package day
 object Day10 : Day {
     override fun part1(input: List<String>): Result {
         val map =
-            input.mapIndexed { y, line -> line.mapIndexed { x, it -> PipeSection(x, y, charToConnectedSides(it), it) } }
+            fixStart(input.mapIndexed { y, line ->
+                line.mapIndexed { x, it ->
+                    PipeSection(
+                        x,
+                        y,
+                        charToConnectedSides(it),
+                        it
+                    )
+                }
+            })
         val distances = calculateDistanceFromStart(map)
         return distances.flatten().filter { it != Int.MAX_VALUE }.max().asSuccess()
     }
 
+    fun fixStart(map: List<List<PipeSection>>): List<List<PipeSection>> {
+        val mutableMap = map.map { it.toMutableList() }.toMutableList()
+        val start = map.flatten().first { it.char == 'S' }
+
+        val startSections = start.connectedSections(map).filter { it.connectedSections(map).contains(start) }
+        val startConnectedSides = mutableSetOf<Side>()
+        startSections.forEach {
+            when {
+                it.x < start.x -> startConnectedSides.add(Side.West)
+                it.y < start.y -> startConnectedSides.add(Side.North)
+                it.x > start.x -> startConnectedSides.add(Side.East)
+                it.y > start.y -> startConnectedSides.add(Side.South)
+            }
+        }
+        mutableMap[start.y][start.x] = start.copy(connectedSides = startConnectedSides)
+        return mutableMap
+    }
+
     override fun part2(input: List<String>): Result {
         val map =
-            input.mapIndexed { y, line -> line.mapIndexed { x, it -> PipeSection(x, y, charToConnectedSides(it), it) } }
+            fixStart(input.mapIndexed { y, line ->
+                line.mapIndexed { x, it ->
+                    PipeSection(
+                        x,
+                        y,
+                        charToConnectedSides(it),
+                        it
+                    )
+                }
+            })
         val distances = calculateDistanceFromStart(map)
         //Keep only the original loop
         val onlyLoopMap = map.map { line ->
@@ -23,7 +59,7 @@ object Day10 : Day {
                 ) else it
             }
         }
-        val insideMap = onlyLoopMap.map { it.toMutableList() }.toMutableList()
+        /*val insideMap = onlyLoopMap.map { it.toMutableList() }.toMutableList()
         var insideCount = 0
         onlyLoopMap.forEachIndexed { y, line ->
             var isInside = false
@@ -33,8 +69,8 @@ object Day10 : Day {
             } else if (!isInside && it.char == '.') {
                 insideMap[y][x] = insideMap[y][x].copy(char = 'O')
             }}
-        }
-        /*// Blow it up by 2x so gaps between pipes appear
+        }*/
+        // Blow it up by 2x so gaps between pipes appear
         val enlargedLoopMap = enlargeLoopMap(onlyLoopMap)
         val fillMap = enlargedLoopMap.map { it.toMutableList() }.toMutableList()
         val xSize = fillMap[0].size
@@ -48,21 +84,22 @@ object Day10 : Day {
             }
         }
 
-        // Why is floodfill off by one 😡
-        val shrunkenMap = fillMap.filterIndexed { y, _ -> y % 2 == 0 }.map { line -> line.filterIndexed {x, _ -> x % 2 == 0} }
+        val shrunkenMap =
+            fillMap.filterIndexed { y, _ -> y % 2 == 0 }.map { line -> line.filterIndexed { x, _ -> x % 2 == 0 } }
 
-        println(mapToString(fillMap))
+        /*println(mapToString(fillMap))
         println()
         println(mapToString(shrunkenMap))
         println()
-        println(mapToString(insideMap))*/
+        println(mapToString(insideMap))
 
-        return insideCount.asSuccess()
-        /*return shrunkenMap.flatten().count { it.char == '.' }.asSuccess()*/
+        //return insideCount.asSuccess()*/
+        return shrunkenMap.flatten().count { it.char == '.' }.asSuccess()
     }
 
     fun mapToString(map: List<List<PipeSection>>): String {
-        return map.map { line -> line.map { it.char }.joinToString(separator = "") }.mapIndexed{ y, line -> "$y: $line"}.joinToString("\n")
+        return map.map { line -> line.map { it.char }.joinToString(separator = "") }
+            .mapIndexed { y, line -> "$y: $line" }.joinToString("\n")
     }
 
     private fun floodFill(fillMap: MutableList<MutableList<PipeSection>>, x: Int, y: Int) {
@@ -76,7 +113,7 @@ object Day10 : Day {
     fun calculateDistanceFromStart(map: List<List<PipeSection>>): List<List<Int>> {
         val distances = MutableList(map.size) { MutableList(map[0].size) { Int.MAX_VALUE } }
         val start = map.flatten().first { it.char == 'S' }
-        val startSections = start.connectedSections(map).filter { it.connectedSections(map).contains(start) }
+        val startSections = start.connectedSections(map)
         distances[start.y][start.x] = 0
         var currentSections = startSections
         var currentDistance = 1
@@ -99,7 +136,6 @@ object Day10 : Day {
     }
 
     fun enlargePipeSection(newX: Int, newY: Int, pipeSection: PipeSection): PipeSection {
-
         val newConnectedSides: Set<Side> =
             if (newX % 2 == 0 && newY % 2 == 0) {
                 return pipeSection.copy(x = newX, y = newY)
