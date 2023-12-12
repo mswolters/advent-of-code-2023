@@ -43,3 +43,11 @@ fun <A, B> Iterable<A>.cartesianProduct(other: Iterable<B>): Sequence<Pair<A, B>
         }
     }
 }
+
+fun <T> List<T>.repeat(times: Int): List<T> {
+    val result = mutableListOf<T>()
+    repeat(times) {
+        result.addAll(this)
+    }
+    return result
+}
