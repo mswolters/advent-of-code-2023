@@ -1,7 +1,6 @@
 package day
 
 import asInts
-import repeat
 import split
 
 object Day12 : Day {
