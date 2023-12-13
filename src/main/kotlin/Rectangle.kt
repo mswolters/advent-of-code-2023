@@ -14,9 +14,9 @@ class Rectangle<T>(val width: Int, val height: Int, init: (Int, Int) -> T) : Col
 
     override fun contains(element: T): Boolean = content.contains(element)
 
-    fun rows(): List<List<T>> = content.chunked(width)
+    fun rows(): List<List<T>> = if (content.isNotEmpty()) content.chunked(width) else emptyList()
 
-    fun columns(): List<List<T>> = content.byNth(width)
+    fun columns(): List<List<T>> = if (content.isNotEmpty()) content.byNth(width) else emptyList()
 
     fun transpose(): Rectangle<T> = Rectangle(height, width) { x, y -> this[y, x] }
 
