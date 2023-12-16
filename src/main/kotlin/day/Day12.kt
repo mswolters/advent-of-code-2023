@@ -1,8 +1,6 @@
 package day
 
-import Memo2
 import asInts
-import memoize
 import repeat
 import split
 
@@ -28,7 +26,7 @@ object Day12 : Day {
     override fun part2(input: List<String>): Result {
         val validArrangementCounts = input.map { parse(it) }
             .map { (springs, record) -> repeatSpringWithUnknownInBetween(springs) to record.repeat(5) }
-            .map { (springs, record) -> part2SolveMemoized(springs, record) }
+            .map { (springs, record) -> calculateValidConditionsCount(springs, record) }
         return validArrangementCounts.sum().asSuccess()
     }
 
@@ -72,7 +70,43 @@ object Day12 : Day {
         return workingSpringSizes == record
     }
 
-    val part2SolveMemoized = Memo2<List<SpringCondition>, List<Int>, Long>::calculateValidConditionsCount.memoize()
+
+    private val _calculateValidConditionsCount = mutableMapOf<Pair<List<SpringCondition>, List<Int>>, Long>()
+    private fun calculateValidConditionsCount(springs: List<SpringCondition>, record: List<Int>): Long =
+        _calculateValidConditionsCount.getOrPut(Pair(springs, record)) {
+            if (springs.isEmpty()) {
+                return@getOrPut if (record.isEmpty()) 1L else 0L
+            }
+
+            return@getOrPut when (springs.first()) {
+                SpringCondition.Unknown -> calculateValidWorkingConditionsCount(springs, record) +
+                        calculateValidConditionsCount(springs.subList(1, springs.size), record)
+
+                SpringCondition.Working -> calculateValidWorkingConditionsCount(springs, record)
+                SpringCondition.Broken -> calculateValidConditionsCount(springs.subList(1, springs.size), record)
+            }
+        }
+
+    private fun calculateValidWorkingConditionsCount(springs: List<SpringCondition>, record: List<Int>): Long {
+        if (record.isEmpty()) {
+            return 0L
+        }
+        val expectedWorkingCount = record.first()
+        if (springs.size < expectedWorkingCount) {
+            return 0L
+        }
+        return if (springs.subList(0, expectedWorkingCount).all { it != SpringCondition.Broken }) {
+            // if end of springs and end of record return 1
+            if (springs.size == expectedWorkingCount) {
+                if (record.size == 1) 1L else 0L
+            } else if (springs[expectedWorkingCount] != SpringCondition.Working) {
+                calculateValidConditionsCount(
+                    springs.subList(expectedWorkingCount + 1, springs.size),
+                    record.subList(1, record.size)
+                )
+            } else 0L
+        } else 0L
+    }
 
     enum class SpringCondition {
         Unknown,
@@ -102,45 +136,4 @@ object Day12 : Day {
                 .lines()
         )
     }
-}
-
-private fun Memo2<List<Day12.SpringCondition>, List<Int>, Long>.calculateValidConditionsCount(springs: List<Day12.SpringCondition>, record: List<Int>): Long {
-    if (springs.isEmpty() && record.isNotEmpty()) {
-        return 0L
-    }
-    if (springs.isEmpty() && record.isEmpty()) {
-        return 1L
-    }
-
-    return when (springs.first()) {
-        Day12.SpringCondition.Unknown -> calculateValidWorkingConditionsCount(springs, record) +
-                recurse(springs.subList(1, springs.size), record)
-
-        Day12.SpringCondition.Working -> calculateValidWorkingConditionsCount(springs, record)
-        Day12.SpringCondition.Broken -> recurse(springs.subList(1, springs.size), record)
-    }
-}
-
-private fun calculateValidWorkingConditionsCount(springs: List<Day12.SpringCondition>, record: List<Int>): Long {
-    if (record.isEmpty()) {
-        return 0L
-    }
-    val expectedWorkingCount = record.first()
-    if (springs.size < expectedWorkingCount) {
-        return 0L
-    }
-    if (springs.subList(0, expectedWorkingCount).all { it != Day12.SpringCondition.Broken }) {
-        // if end of springs and end of record return 1
-        return if (springs.size == expectedWorkingCount) {
-            if (record.size == 1) 1L else 0L
-        } else if (springs[expectedWorkingCount] != Day12.SpringCondition.Working) {
-            Day12.part2SolveMemoized(
-                springs.subList(expectedWorkingCount + 1, springs.size),
-                record.subList(1, record.size)
-            )
-        } else {
-            0L
-        }
-    }
-    return 0L
 }
