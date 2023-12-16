@@ -11,7 +11,15 @@ interface Rectangle<out T> : Collection<T> {
     data class Coordinate(val x: Int, val y: Int)
 }
 
-private class RectangleImpl<T>(override val width: Int, override val height: Int, init: (Int, Int) -> T) : Rectangle<T> {
+fun <T> Rectangle(width: Int, height: Int, init: (Int, Int) -> T): Rectangle<T> {
+    return RectangleImpl(width, height, init)
+}
+
+fun Rectangle<*>.isInBounds(x: Int, y: Int): Boolean = x in 0..<width && y in 0..<height
+fun Rectangle<*>.isInBounds(coordinate: Rectangle.Coordinate): Boolean = isInBounds(coordinate.x, coordinate.y)
+
+private class RectangleImpl<T>(override val width: Int, override val height: Int, init: (Int, Int) -> T) :
+    Rectangle<T> {
 
     private val content = List(width * height) { index -> init(index % width, index / width) }
 
@@ -62,12 +70,14 @@ interface MutableRectangle<T> : Rectangle<T>, MutableCollection<T> {
     }
 
 }
-class MutableRectangleImpl<T>(override val width: Int, override val height: Int, init: (Int, Int) -> T) : MutableRectangle<T> {
+
+private class MutableRectangleImpl<T>(override val width: Int, override val height: Int, init: (Int, Int) -> T) :
+    MutableRectangle<T> {
 
     private val content = MutableList(width * height) { index -> init(index % width, index / width) }
 
     override fun set(x: Int, y: Int, value: T) {
-        content[x + y*width] = value
+        content[x + y * width] = value
     }
 
     override operator fun get(x: Int, y: Int): T = content[x + y * width]
@@ -141,6 +151,14 @@ class MutableRectangleImpl<T>(override val width: Int, override val height: Int,
 
 }
 
+fun <T> Rectangle<T>.toString(transform: ((T) -> CharSequence)? = null): String {
+    return rows().joinToString("\n") { line -> line.joinToString("", transform = transform) }
+}
+
+fun <T> MutableRectangle(width: Int, height: Int, init: (Int, Int) -> T): MutableRectangle<T> {
+    return MutableRectangleImpl(width, height, init)
+}
+
 fun <T> List<List<T>>.transpose(): List<List<T>> = List(this[0].size) { y -> List(this.size) { x -> this[x][y] } }
 
 
@@ -150,6 +168,7 @@ fun <T> List<List<T>>.toRectangle(): Rectangle<T> {
 
     return RectangleImpl(width, this.size) { x, y -> this[y][x] }
 }
+
 fun <T> List<List<T>>.toMutableRectangle(): MutableRectangle<T> {
     val width = firstOrNull()?.size ?: 0
     require(all { it.size == width }) { "All elements should have the same size" }
@@ -157,27 +176,68 @@ fun <T> List<List<T>>.toMutableRectangle(): MutableRectangle<T> {
     return MutableRectangleImpl(width, this.size) { x, y -> this[y][x] }
 }
 
-enum class Side {
-    North, East, South, West
+fun Rectangle<*>.edges(): Map<Rectangle.Coordinate, Side> {
+    val ret = mutableMapOf<Rectangle.Coordinate, Side>()
+    for (x in 0..<width) {
+        ret[Rectangle.Coordinate(x, 0)] = Side.North
+        ret[Rectangle.Coordinate(x, height - 1)] = Side.South
+    }
+    for (y in 0..<height) {
+        ret[Rectangle.Coordinate(0, y)] = Side.West
+        ret[Rectangle.Coordinate(width - 1, y)] = Side.East
+    }
+    return ret
 }
+
+enum class Side {
+    North, East, South, West;
+
+    fun opposite(): Side {
+        return when (this) {
+            North -> South
+            East -> West
+            South -> North
+            West -> East
+        }
+    }
+
+    fun perpendicular(): Set<Side> {
+        return when (this) {
+            North, South -> setOf(East, West)
+            East, West -> setOf(North, South)
+        }
+    }
+}
+
+fun Side.coordinateNextTo(x: Int, y: Int): Rectangle.Coordinate {
+    return when (this) {
+        Side.North -> Rectangle.Coordinate(x, y - 1)
+        Side.East -> Rectangle.Coordinate(x + 1, y)
+        Side.South -> Rectangle.Coordinate(x, y + 1)
+        Side.West -> Rectangle.Coordinate(x - 1, y)
+    }
+}
+
+fun Side.coordinateNextTo(coordinate: Rectangle.Coordinate): Rectangle.Coordinate =
+    coordinateNextTo(coordinate.x, coordinate.y)
 
 fun <T> Rectangle<T>.toMutableRectangle(): MutableRectangle<T> {
     return MutableRectangleImpl(width, height) { x, y -> get(x, y) }
 }
 
-fun <T> Rectangle<T>.neighbours(x: Int, y: Int): Map<Side, T> {
-    val result = mutableMapOf<Side, T>()
+fun <T> Rectangle<T>.neighbours(x: Int, y: Int): Map<Side, Pair<T, Rectangle.Coordinate>> {
+    val result = mutableMapOf<Side, Pair<T, Rectangle.Coordinate>>()
     if (y > 0) {
-        result[Side.North] = this[x, y - 1]
+        result[Side.North] = this[x, y - 1] to Rectangle.Coordinate(x, y - 1)
     }
     if (x < width - 1) {
-        result[Side.East] = this[x + 1, y]
+        result[Side.East] = this[x + 1, y] to Rectangle.Coordinate(x + 1, y)
     }
     if (y < height - 1) {
-        result[Side.South] = this[x, y + 1]
+        result[Side.South] = this[x, y + 1] to Rectangle.Coordinate(x, y + 1)
     }
     if (x > 0) {
-        result[Side.West] = this[x - 1, y]
+        result[Side.West] = this[x - 1, y] to Rectangle.Coordinate(x - 1, y)
     }
     return result
 }
