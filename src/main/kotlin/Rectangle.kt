@@ -209,6 +209,11 @@ enum class Side {
     }
 }
 
+fun Rectangle<*>.topLeftCoordinate() = Rectangle.Coordinate(0, 0)
+fun Rectangle<*>.topRightCoordinate() = Rectangle.Coordinate(width - 1, 0)
+fun Rectangle<*>.bottomLeftCoordinate() = Rectangle.Coordinate(0, height - 1)
+fun Rectangle<*>.bottomRightCoordinate() = Rectangle.Coordinate(width - 1, height - 1)
+
 fun Side.coordinateNextTo(x: Int, y: Int): Rectangle.Coordinate {
     return when (this) {
         Side.North -> Rectangle.Coordinate(x, y - 1)
@@ -240,4 +245,19 @@ fun <T> Rectangle<T>.neighbours(x: Int, y: Int): Map<Side, Pair<T, Rectangle.Coo
         result[Side.West] = this[x - 1, y] to Rectangle.Coordinate(x - 1, y)
     }
     return result
+}
+
+fun <T> Rectangle<T>.neighbours(coordinate: Rectangle.Coordinate): Map<Side, Pair<T, Rectangle.Coordinate>> =
+    neighbours(coordinate.x, coordinate.y)
+
+fun Rectangle.Coordinate.direction(to: Rectangle.Coordinate): Side {
+    return if (to.x < x) {
+        Side.West
+    } else if (to.x > x) {
+        Side.East
+    } else if (to.y < y) {
+        Side.North
+    } else {
+        Side.South
+    }
 }
