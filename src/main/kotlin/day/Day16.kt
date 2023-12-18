@@ -4,7 +4,6 @@ import Rectangle
 import Side
 import coordinateNextTo
 import edges
-import isInBounds
 import toRectangle
 import java.util.*
 
