@@ -12,12 +12,7 @@ fun <N> findPath(start: N, isEnd: (node: N) -> Boolean, edgesForNode: (node: N, 
 
         val comparison = (distancesToNodes[left]!!.length - distancesToNodes[right]!!.length).toInt()
         if (comparison == 0) {
-            val hashDiff = left.hashCode() - right.hashCode()
-            if (hashDiff == 0) {
-                -1
-            } else {
-                hashDiff
-            }
+            if (left.hashCode() > right.hashCode()) 1 else -1
         } else {
             comparison
         }

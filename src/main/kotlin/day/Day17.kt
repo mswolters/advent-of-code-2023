@@ -20,9 +20,6 @@ object Day17 : Day {
             PathNode(startCoordinate, Side.North, 0),
             { node -> node.coordinate == endCoordinate },
             { node, pathToNode ->
-                /*println(pathToString(city, pathToNode))
-                println()*/
-
                 val directions = toDirections(pathToNode.nodes)
                 val removeDirections = if (node.numDirection == 3) setOf(directions.last()) else emptySet()
                 val lastDirection = if (directions.any()) setOf(directions.last().opposite()) else emptySet()
