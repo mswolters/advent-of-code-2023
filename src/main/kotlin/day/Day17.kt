@@ -18,7 +18,7 @@ object Day17 : Day {
         val endCoordinate = city.bottomRightCoordinate()
         val path = findPath(
             PathNode(startCoordinate, Side.North, 0),
-            { node -> node.coordinate == endCoordinate },
+            { node, _ -> node.coordinate == endCoordinate })
             { node, pathToNode ->
                 val directions = toDirections(pathToNode.nodes)
                 val removeDirections = if (node.numDirection == 3) setOf(directions.last()) else emptySet()
@@ -31,11 +31,11 @@ object Day17 : Day {
                         if (lastDirection.isNotEmpty() && lastDirection.last().opposite() == neighbourDirection) node.numDirection + 1 else 1
                     PathNode(coordinate, neighbourDirection, numDirection) to heatLoss.toDouble()
                 }
-            })/* {
+            }/* {
             sqrt(((endCoordinate.x - it.coordinate.x) shl 1).toDouble() + ((endCoordinate.y - it.coordinate.y) shl 1).toDouble()) / 20
         }*/
 
-        return path.nodes.drop(1).sumOf { city[it.coordinate] }.asSuccess()
+        return path!!.nodes.drop(1).sumOf { city[it.coordinate] }.asSuccess()
     }
 
     fun toDirections(path: List<PathNode>): List<Side> =
@@ -63,7 +63,7 @@ object Day17 : Day {
         val endCoordinate = city.bottomRightCoordinate()
         val path = findPath(
             PathNode(startCoordinate, Side.North, 0),
-            { node -> node.coordinate == endCoordinate && node.numDirection >= 4 },
+            { node, _ -> node.coordinate == endCoordinate && node.numDirection >= 4 })
             { node, pathToNode ->
 
                 val directions = toDirections(pathToNode.nodes)
@@ -77,9 +77,9 @@ object Day17 : Day {
                         if (cameFromDirection.isNotEmpty() && cameFromDirection.last().opposite() == neighbourDirection) node.numDirection + 1 else 1
                     PathNode(coordinate, neighbourDirection, numDirection) to heatLoss.toDouble()
                 }
-            })
+            }
 
-        return path.nodes.drop(1).sumOf { city[it.coordinate] }.asSuccess()
+        return path!!.nodes.drop(1).sumOf { city[it.coordinate] }.asSuccess()
     }
 
     override fun testData(): Day.TestData {

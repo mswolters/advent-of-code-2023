@@ -26,6 +26,7 @@ object Day20 : Day {
     }
 
     override fun part2(input: List<String>): Result {
+        // Apparently, go back from rx until you find no more conjunctions, find the cycle for those conjunctions, lcm
         return NotImplemented
     }
 
@@ -50,7 +51,7 @@ object Day20 : Day {
                 Pulse.High -> state.highs += outputs.size
             }
             outputs.forEach {
-                println("$name -$pulse> $it")
+                //println("$name -$pulse> $it")
                 state.pulseQueue.add(PulseData(name, it, pulse))
             }
         }

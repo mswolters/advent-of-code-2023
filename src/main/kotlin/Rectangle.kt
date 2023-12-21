@@ -6,6 +6,7 @@ interface Rectangle<out T> : Collection<T> {
     val height: Int
     operator fun get(x: Int, y: Int): T
     operator fun get(coordinate: Coordinate): T = get(coordinate.x, coordinate.y)
+    fun indexedIterator(): Iterator<Pair<Coordinate, T>>
     fun rows(): List<List<T>>
     fun columns(): List<List<T>>
     fun transpose(): Rectangle<T>
@@ -21,8 +22,7 @@ fun <T> Rectangle(width: Int, height: Int, init: (x: Int, y: Int) -> T): Rectang
     return RectangleImpl(width, height, init)
 }
 
-private class RectangleImpl<T>(override val width: Int, override val height: Int, init: (Int, Int) -> T) :
-    Rectangle<T> {
+private class RectangleImpl<T>(override val width: Int, override val height: Int, init: (Int, Int) -> T) : Rectangle<T> {
 
     private val content = List(width * height) { index -> init(index % width, index / width) }
 
@@ -33,6 +33,15 @@ private class RectangleImpl<T>(override val width: Int, override val height: Int
     override fun isEmpty(): Boolean = width == 0 && height == 0
 
     override fun iterator(): Iterator<T> = content.iterator()
+    override fun indexedIterator(): Iterator<Pair<Rectangle.Coordinate, T>> {
+        return iterator {
+            for (x in 0..<width) {
+                for (y in 0..<height) {
+                    yield(Rectangle.Coordinate(x, y) to get(x, y))
+                }
+            }
+        }
+    }
 
     override fun containsAll(elements: Collection<T>): Boolean = content.containsAll(elements)
 
@@ -67,6 +76,7 @@ private class RectangleImpl<T>(override val width: Int, override val height: Int
 }
 
 interface MutableRectangle<T> : Rectangle<T>, MutableCollection<T> {
+
     operator fun set(x: Int, y: Int, value: T)
     operator fun set(coordinate: Rectangle.Coordinate, value: T) {
         set(coordinate.x, coordinate.y, value)
@@ -104,6 +114,16 @@ private class MutableRectangleImpl<T>(override val width: Int, override val heig
 
     override fun iterator(): MutableIterator<T> {
         return content.iterator()
+    }
+
+    override fun indexedIterator(): Iterator<Pair<Rectangle.Coordinate, T>> {
+        return iterator {
+            for (x in 0..<width) {
+                for (y in 0..<height) {
+                    yield(Rectangle.Coordinate(x, y) to get(x, y))
+                }
+            }
+        }
     }
 
     override fun clear() {
@@ -210,6 +230,8 @@ private class AutoResizingMutableRectangleImpl<T>(
     override fun isEmpty(): Boolean = content.isEmpty()
 
     override fun iterator(): MutableIterator<T> = content.iterator()
+
+    override fun indexedIterator(): Iterator<Pair<Rectangle.Coordinate, T>> = content.indexedIterator()
 
     override fun clear() {
         content = MutableRectangleImpl(0, 0, init)
